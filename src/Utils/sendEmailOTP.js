@@ -5,9 +5,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import dotenv from 'dotenv';
-import { generateOTP } from '../Utils/generateOTP.js';
-
-const otp=generateOTP();
 
 // Load environment variables
 dotenv.config();
@@ -20,17 +17,22 @@ const __dirname = dirname(__filename);
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: process.env.sender_mail,
-    pass: process.env.sender_password
-  }
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
 // Read HTML template and compile with Handlebars
 const getTemplate = (templateName, data) => {
-  const filepath = path.join(__dirname, '../Pages/emailTemplate', `${templateName}.html`);
-  const source = fs.readFileSync(filepath, 'utf-8').toString();
-  const template = handlebars.compile(source);
-  return template(data);
+  try {
+    const filepath = path.join(__dirname, '../Pages', `${templateName}.html`);
+    const source = fs.readFileSync(filepath, 'utf-8').toString();
+    const template = handlebars.compile(source);
+    return template(data);
+  } catch (error) {
+    console.error('❌ Error while reading or compiling the email template:', error.message);
+    throw new Error('Failed to load email template');
+  }
 };
 
 // Main function to send email
@@ -38,21 +40,16 @@ export const sendEmail = async (to, subject, templateName, data) => {
   try {
     const html = getTemplate(templateName, data);
     const mailOptions = {
-      from: process.env.sender_mail,
+      from: process.env.EMAIL_USER,
       to,
       subject,
-      html
+      html,
     };
 
-    emailChecker(to, mailOptions); // Optional pre-check
     await transporter.sendMail(mailOptions);
-
     console.log('✅ Email sent successfully to:', to);
   } catch (error) {
     console.error('❌ Error while sending email:', error.message);
+    throw new Error('Failed to send email');
   }
 };
-
-// Example usage
-// const otp = generateOTP();
-// sendEmail("user@example.com", "Verify Your OTP", "otpTemplate", { otp });
