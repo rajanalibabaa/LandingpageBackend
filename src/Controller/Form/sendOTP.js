@@ -1,7 +1,7 @@
 import { generateOTP } from "../../Utils/generateOTP.js";
 import { generateToken } from "../../Utils/generateToken.js";
 import { sendEmailOTP } from "../../Utils/sendEmailOTP.js";
-import { sendMobileSMS } from "../../Utils/sendTwilio.js";
+
 
 
     export const sendOTP = async (req, res) => {
@@ -28,8 +28,7 @@ import { sendMobileSMS } from "../../Utils/sendTwilio.js";
         try {
             if (type === "email") {
                 await sendEmailOTP(identifier, generatedOtp);
-            } else if (type === "mobile") {
-                await sendMobileSMS(identifier, generatedOtp);
+           
             } else {
                 return res.status(400).json({ error: "Invalid type" });
             }

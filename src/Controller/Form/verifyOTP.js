@@ -9,14 +9,18 @@ export const verifyOTP = async (req, res) => {
     }
 
     try {
-        const decoded = verifyToken(token, JWT_SECRET);
+        // Verify the token
+        const decoded = verifyToken(token, process.env.JWT_SECRET);
+        console.log("Decoded Token:", decoded);
 
+        // Check if the identifier and OTP match
         if (decoded.identifier === identifier && decoded.otp === otp) {
             return res.status(200).json({ message: "OTP verified successfully" });
         } else {
             return res.status(400).json({ error: "Invalid or expired OTP" });
         }
     } catch (error) {
+        console.error("Error verifying OTP:", error);
         return res.status(400).json({ error: "Invalid or expired token" });
     }
 };

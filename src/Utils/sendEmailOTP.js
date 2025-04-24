@@ -1,42 +1,58 @@
-import nodemailer from "nodemailer";
+import nodemailer from 'nodemailer';
+import fs from 'fs';
+import handlebars from 'handlebars';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import dotenv from 'dotenv';
+import { generateOTP } from '../Utils/generateOTP.js';
 
-import { generateOTP } from "./generateOTP.js";
-const otp = generateOTP(); // Generate a random OTP
+const otp=generateOTP();
 
-export const sendEmailOTP = async (email, otp) => {
+// Load environment variables
+dotenv.config();
 
-  console.log("email :", email,otp)
+// Get __dirname in ES module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,   // Your Gmail
-      pass: process.env.EMAIL_PASS    // App password or your mail pass
+// Configure mail transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.sender_mail,
+    pass: process.env.sender_password
+  }
+});
 
-    }
-  });
-
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: "Your Email OTP",
-
-    text: `Your OTP is: ${otp}. It will expire in 5 minutes.`
-
+// Read HTML template and compile with Handlebars
+const getTemplate = (templateName, data) => {
+  const filepath = path.join(__dirname, '../Pages/emailTemplate', `${templateName}.html`);
+  const source = fs.readFileSync(filepath, 'utf-8').toString();
+  const template = handlebars.compile(source);
+  return template(data);
 };
-try {
-  const info = await transporter.sendMail(mailOptions);
-  console.log('Email sent:', info.response);
-  return otp;  // Return OTP for further use if needed
-} catch (error) {
-  console.error('Error sending email:', error);
-  throw new Error('Failed to send OTP email');
-}
+
+// Main function to send email
+export const sendEmail = async (to, subject, templateName, data) => {
+  try {
+    const html = getTemplate(templateName, data);
+    const mailOptions = {
+      from: process.env.sender_mail,
+      to,
+      subject,
+      html
+    };
+
+    emailChecker(to, mailOptions); // Optional pre-check
+    await transporter.sendMail(mailOptions);
+
+    console.log('✅ Email sent successfully to:', to);
+  } catch (error) {
+    console.error('❌ Error while sending email:', error.message);
+  }
 };
 
-
-
-
-export default sendEmailOTP;
-
-
+// Example usage
+// const otp = generateOTP();
+// sendEmail("user@example.com", "Verify Your OTP", "otpTemplate", { otp });
