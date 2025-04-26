@@ -10,10 +10,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(cors({origin: "http://localhost:5173", // Replace with your frontend's URL
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
+app.use(cors({origin: ["http://localhost:5173", "https://franchiseconsulting.mrfranchise.in/"],
+    // methods: ["GET", "POST"],
+    // allowedHeaders: ["Content-Type", "Authorization"],
+    // credentials: true
 
 }));
 

@@ -20,6 +20,9 @@ const transporter = nodemailer.createTransport({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+   tls: {
+    rejectUnauthorized: false // 👈 This disables certificate validation
+  }
 });
 
 // Read HTML template and compile with Handlebars
@@ -50,6 +53,9 @@ export const sendEmail = async (to, subject, templateName, data) => {
     console.log('✅ Email sent successfully to:', to);
   } catch (error) {
     console.error('❌ Error while sending email:', error.message);
-    throw new Error('Failed to send email');
+
+ tls: {
+    rejectUnauthorized: false // 👈 This disables certificate validation
+  }    throw new Error('Failed to send email');
   }
 };
